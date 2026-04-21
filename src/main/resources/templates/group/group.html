@@ -282,6 +282,7 @@
     <script th:inline="javascript">
         /*<![CDATA[*/
         const chatSocketPort = /*[[${chatSocketPort}]]*/ 8589;
+        console.log("[group-tracker] chatSocketPort injected from server:", chatSocketPort);
         /*]]>*/
     </script>
     <script>
@@ -294,7 +295,9 @@
         function buildChatSocketEndpoint() {
             const protocol = window.location.protocol;
             const hostname = window.location.hostname;
-            return `${protocol}//${hostname}:${chatSocketPort}/ws-chat`;
+            const endpoint = `${protocol}//${hostname}:${chatSocketPort}/ws-chat`;
+            console.log("[group-tracker] SockJS request URL:", endpoint, "(port:", chatSocketPort + ")");
+            return endpoint;
         }
 
         // get table
