@@ -8,5 +8,6 @@ public enum ContentType {
     COMMENT,
     ANNOUNCEMENT,
     JOKE,
-    CHATTER
+    CHATTER,
+    HEAD_CALIBRATION
 }
