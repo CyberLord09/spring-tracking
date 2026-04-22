@@ -186,6 +186,15 @@ Note, steps 1,2,3,5 are on your development (LOCAL) server. You need to update y
 5. Once you are satisfied with your changes, push the local DB content to the remote DB. This requires authentication, so you need to replace the ADMIN_PASSWORD in the .env file of "spring" with the production admin password.
 > python scripts/db_local2prod.py
 
+## Direct migration scripts
+
+Use these when you want a full one-command database sync instead of the staged workflow above:
+
+- Pull MySQL into local SQLite: `python scripts/db_mysql2local.py`
+- Push local SQLite into MySQL: `python scripts/db_local2mysql.py`
+
+Both scripts use the database settings from `.env`, and both can be run non-interactively with `FORCE_YES=true`.
+
 ## Condensed DB/Schema update simple steps
 
 **(a copy of what's above, just condensed)**
@@ -196,10 +205,39 @@ Note, steps 1,2,3,5 are on your development (LOCAL) server. You need to update y
 
 3. Test your changes locally
 
-4. On production server (in cockpit):
+4. On production server (in cockpit: open/spring directory):
 - Backup DB in volumes directory: `cp sqlite.db backups/sqlite_year-month-day.db`
+- Take spring instance down: `docker compose down`
 - Update code: `git pull`
 - Update schema: `python scripts/db_init.py`
+- Bring spring instance up: `docker compose up -d --build`
 
 5. Push local changes to production: `python scripts/db_local2prod.py`
 (Requires admin password from production in .env)
+
+
+# Testing Grade FRQs API with Postman
+
+## Step 1: Authenticate
+
+**POST** `http://127.0.0.1:8585/authenticate`
+
+**Headers:** `Content-Type: application/json`
+
+**Body:**
+```json
+{
+  "uid": "toby",
+  "password": "123Toby!"
+}
+```
+
+**Action:** Send request → Copy `jwt_java_spring` token from Cookies tab
+
+## Step 2: Grade FRQs
+
+**POST** `http://127.0.0.1:8585/api/grade-frqs`
+
+**Headers:** `Cookie: jwt_java_spring=YOUR_TOKEN_HERE`
+
+**Action:** Send request

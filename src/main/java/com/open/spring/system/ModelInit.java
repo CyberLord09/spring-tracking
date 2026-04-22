@@ -424,7 +424,7 @@ public class ModelInit {
                     assignmentJpaRepository.save(newAssignment);
 
                     // create sample submission
-                    submissionJPA.save(new AssignmentSubmission(newAssignment, personJpaRepository.findByUid("madam"), "test submission","test comment", false));
+                    submissionJPA.save(new AssignmentSubmission(newAssignment, personJpaRepository.findByUid("madam"), java.util.Map.of("type", "link", "url", "test submission"), "test comment", false));
                 }
             }
 
@@ -434,6 +434,11 @@ public class ModelInit {
                 Double gradeValue = Double.parseDouble(gradeInfo[0]);
                 Assignment assignment = assignmentJpaRepository.findByName(gradeInfo[1]);
                 Person student = personJpaRepository.findByUid(gradeInfo[2]);
+
+                if (assignment == null || student == null) {
+                    System.out.println("Skipping SynergyGrade seed: missing assignment or student for " + gradeInfo[1] + " / " + gradeInfo[2]);
+                    continue;
+                }
 
                 SynergyGrade gradeFound = gradeJpaRepository.findByAssignmentAndStudent(assignment, student);
                 if (gradeFound == null) { // If the grade doesn't exist

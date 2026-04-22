@@ -3,12 +3,10 @@ package com.open.spring.mvc.assignments;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 import java.util.Date;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.open.spring.mvc.person.Person;
 import com.open.spring.mvc.synergy.SynergyGrade;
 
@@ -16,6 +14,7 @@ import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -27,11 +26,12 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Data
-@Entity
+@Entity(name = "AssignmentEntity")
+@Table(name = "assignment")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -70,10 +70,17 @@ public class Assignment {
 
 
     @OneToMany(mappedBy="assignment", cascade=CascadeType.ALL, orphanRemoval=true)
+    @JsonIgnore
     private List<SynergyGrade> grades;
 
     @NotNull
     private Double points;
+
+    // Optional assignment resource metadata linked to this assignment ID.
+    private String resourceType;
+    private String resourceUrl;
+    private String resourceFilename;
+    private String resourceStoragePath;
 
     private Long presentationLength;
 
@@ -118,8 +125,34 @@ public class Assignment {
         this.points = points;
         this.dueDate = dueDate; 
         this.timestamp = LocalDateTime.now().format(formatter); // fixed formatting ahhh
+        this.resourceType = "none";
+        this.resourceUrl = null;
+        this.resourceFilename = null;
+        this.resourceStoragePath = null;
         // This line is not needed as converter will reset to null after it takes in an empty queue 
         // this.assignmentQueue = new AssignmentQueue();
+    }
+
+    public void setUrlResource(String url) {
+        this.resourceType = "url";
+        this.resourceUrl = url;
+        this.resourceFilename = null;
+        this.resourceStoragePath = null;
+    }
+
+    public void setUrlResource(String url, String uploaderUid) {
+        this.resourceType = "url";
+        this.resourceUrl = url;
+        this.resourceFilename = null;
+        this.resourceStoragePath =
+            (uploaderUid == null || uploaderUid.isBlank()) ? null : uploaderUid + "/url-resource";
+    }
+
+    public void setFileResource(String originalFilename, String storagePath) {
+        this.resourceType = "file";
+        this.resourceFilename = originalFilename;
+        this.resourceStoragePath = storagePath;
+        this.resourceUrl = null;
     }
 
     public static Assignment[] init() {

@@ -1,5 +1,6 @@
 package com.open.spring.mvc.S3uploads;
 
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -7,9 +8,8 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import lombok.extern.slf4j.Slf4j;
-
 import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.ResponseBytes;
@@ -20,6 +20,7 @@ import software.amazon.awssdk.services.s3.model.Delete;
 import software.amazon.awssdk.services.s3.model.DeleteObjectsRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
+import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
 import software.amazon.awssdk.services.s3.model.ObjectIdentifier;
@@ -149,6 +150,48 @@ public class S3FileHandler implements FileHandler {
             return true;
         } catch (Exception e) {
             e.printStackTrace();
+            return false;
+        }
+    }
+
+    @Override
+    public List<String> listFiles(String prefix) {
+        if (s3Client == null) {
+            log.warn("S3 list attempted but S3 client is not configured.");
+            return new ArrayList<>();
+        }
+
+        try {
+            ListObjectsV2Request listReq = ListObjectsV2Request.builder()
+                    .bucket(bucketName)
+                    .prefix(prefix)
+                    .build();
+
+            ListObjectsV2Response listRes = s3Client.listObjectsV2(listReq);
+
+            return listRes.contents().stream()
+                    .map(s3Object -> s3Object.key())
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
+
+    @Override
+    public boolean fileExists(String uid, String filename) {
+        if (s3Client == null) {
+            log.warn("S3 fileExists check attempted but S3 client is not configured.");
+            return false;
+        }
+        String key = generateKey(uid, filename);
+        try {
+            s3Client.headObject(HeadObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(key)
+                    .build());
+            return true;
+        } catch (Exception e) {
             return false;
         }
     }
