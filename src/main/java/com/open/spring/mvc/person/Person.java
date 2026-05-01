@@ -62,7 +62,7 @@ import lombok.NonNull;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@JsonIgnoreProperties({ "submissions", "groups" })
+@JsonIgnoreProperties({ "submissions", "groups", "faceData" })
 public class Person extends Submitter implements Comparable<Person> {
 
     //////////////////////////////////////////////////////////////////////////////////
