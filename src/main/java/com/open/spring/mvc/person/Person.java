@@ -131,6 +131,7 @@ public class Person extends Submitter implements Comparable<Person> {
 
     /** Facial data for recognition (base64 or embedding) */
     @Column(columnDefinition = "text")
+    @JsonIgnore
     private String faceData;
 
     /**
